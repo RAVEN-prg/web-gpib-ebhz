@@ -1,9 +1,15 @@
 import "./globals.css";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import AppSidebar from "@/components/app-sidebar";
 
-export const metadata = { title: "Database Gereja GPIB Ebenhaezer Palangka Raya" };
+export const metadata = {
+  title: "Database Gereja GPIB Ebenhaezer Palangka Raya",
+};
 
 export default function RootLayout({ children }) {
   return (
@@ -12,7 +18,9 @@ export default function RootLayout({ children }) {
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <header className="flex h-12 items-center border-b px-3"><SidebarTrigger /></header>
+            <header className="flex h-12 items-center border-b px-3">
+              <SidebarTrigger />
+            </header>
             {children}
           </SidebarInset>
         </SidebarProvider>
