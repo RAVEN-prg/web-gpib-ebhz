@@ -21,11 +21,15 @@ const KONTROL =
 const SALAH =
   "border-destructive hover:border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20";
 
+// Keterangan yang dipakai berulang
+const TGL = "Ketik langsung: tanggal/bulan/tahun, contoh 05/03/1990.";
+const TEMPAT = "Nama gereja dan kota, contoh: GPIB Ebenhaezer, Palangka Raya.";
+
 // Keterangan kecil per kolom (kunci = nama kolom di database)
 const BANTU = {
   jenis_kelamin: "Sesuai yang tertera di KTP.",
   tempat_lahir: "Kota atau kabupaten tempat lahir.",
-  tanggal_lahir: "Ketik langsung: tanggal/bulan/tahun, contoh 05/03/1990.",
+  tanggal_lahir: TGL,
   alamat: "Alamat tempat tinggal saat ini, bukan alamat KTP jika berbeda.",
   sektor:
     "Sektor pelayanan tempat keluarga terdaftar di gereja. Tanyakan ke majelis jika belum tahu.",
@@ -44,6 +48,16 @@ const BANTU = {
   hobi: "Kegiatan yang disukai di waktu luang. Isi '-' jika tidak ada.",
   keahlian:
     "Keterampilan khusus, contoh: menjahit, musik, komputer. Isi '-' jika tidak ada.",
+  status_baptis: "Pilih Belum jika belum pernah dibaptis.",
+  tanggal_baptis: TGL,
+  tempat_baptis: TEMPAT,
+  status_sidi: "Pilih Belum jika belum pernah sidi.",
+  tanggal_sidi: TGL,
+  tempat_sidi: TEMPAT,
+  status_menikah: "Pilih Belum jika belum menikah.",
+  tanggal_menikah: TGL,
+  tempat_menikah:
+    "Nama gereja atau tempat pemberkatan/pernikahan, beserta kotanya.",
   kategorial:
     "Kelompok pelayanan sesuai usia atau status (PA, PT, GP, PKP, PKB, PKLU).",
   peran_pelayanan:

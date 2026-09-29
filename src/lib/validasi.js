@@ -6,7 +6,28 @@ import {
   KATEGORIAL,
   PERAN,
   DARAH,
+  SUDAH_BELUM,
 } from "./opsi";
+
+// Baptis / sidi / menikah: pilih dulu, tanggal & tempat muncul jika "Sudah"
+const peristiwa = (kunci, tanya, sebutan) => {
+  const sudah = (p) => p[`status_${kunci}`] === "Sudah";
+  return [
+    { k: `status_${kunci}`, label: tanya, t: "select", o: SUDAH_BELUM },
+    {
+      k: `tanggal_${kunci}`,
+      label: `Tanggal ${sebutan} {nama}`,
+      t: "date",
+      ada: sudah,
+    },
+    {
+      k: `tempat_${kunci}`,
+      label: `Tempat ${sebutan} {nama}`,
+      t: "text",
+      ada: sudah,
+    },
+  ];
+};
 
 // t: jenis input | o: pilihan | lain: kolom "Lainnya" | nol: ada tombol "Tidak ada / -" | ada: kapan kolom tampil
 export const FIELDS = [
@@ -73,6 +94,9 @@ export const FIELDS = [
   },
   { k: "hobi", label: "Hobi atau minat {nama}", t: "text", nol: 1 },
   { k: "keahlian", label: "Keahlian yang dimiliki {nama}", t: "text", nol: 1 },
+  ...peristiwa("baptis", "Apakah {nama} sudah dibaptis?", "baptis"),
+  ...peristiwa("sidi", "Apakah {nama} sudah sidi?", "sidi"),
+  ...peristiwa("menikah", "Apakah {nama} sudah menikah?", "pernikahan"),
   { k: "kategorial", label: "Kategorial {nama}", t: "select", o: KATEGORIAL },
   {
     k: "peran_pelayanan",

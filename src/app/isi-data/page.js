@@ -25,6 +25,9 @@ const KONTROL =
 
 const LANGKAH = { keluarga: 1, pilih: 2, kirim: 3 };
 
+// Peristiwa gereja: tanggal & tempat hanya dikirim jika statusnya "Sudah"
+const PERISTIWA = ["baptis", "sidi", "menikah"];
+
 function Bingkai({ className, children }) {
   return (
     <div className={`mx-auto w-full min-w-0 space-y-6 p-4 sm:p-8 ${className}`}>
@@ -96,12 +99,39 @@ export default function IsiData() {
   async function submit() {
     setKirim(true);
     const KEYS = FIELDS.flatMap((f) => (f.lain ? [f.k, f.lain] : [f.k]));
-    const p_anggota = orang.map((o) => ({
-      is_kepala_keluarga: o.kk,
-      nama_lengkap: o.nama_lengkap.trim(),
-      ...Object.fromEntries(KEYS.map((k) => [k, o[k]?.trim() || null])),
-      ...(o.pekerjaan === "Pensiunan" ? { masa_bekerja: null } : {}),
-    }));
+
+    const p_anggota = orang.map((o) => {
+      // Bentuk objek dasar dari KEYS
+      const data = Object.fromEntries(
+        KEYS.map((k) => {
+          const val = typeof o[k] === "string" ? o[k].trim() : o[k];
+          return [k, val ? val : null];
+        }),
+      );
+
+      // Pastikan jika status != 'Sudah', tanggal & tempat bernilai null
+      PERISTIWA.forEach((x) => {
+        if (data[`status_${x}`] !== "Sudah") {
+          data[`tanggal_${x}`] = null;
+          data[`tempat_${x}`] = null;
+        } else {
+          // Jika status Sudah tapi tanggalnya kosong, jadikan null agar valid di kolom date PostgreSQL
+          if (!data[`tanggal_\({x}`]) data[`tanggal_\){x}`] = null;
+          if (!data[`tempat_\({x}`]) data[`tempat_\){x}`] = null;
+        }
+      });
+
+      if (data.pekerjaan === "Pensiunan") {
+        data.masa_bekerja = null;
+      }
+
+      return {
+        is_kepala_keluarga: Boolean(o.kk),
+        nama_lengkap: o.nama_lengkap.trim(),
+        ...data,
+      };
+    });
+
     const { error } = await supabase.rpc("submit_keluarga", {
       p_keluarga: {
         nama_kepala_keluarga: orang[0].nama_lengkap.trim(),
@@ -109,11 +139,14 @@ export default function IsiData() {
       },
       p_anggota,
     });
+
     setKirim(false);
-    if (error)
+    if (error) {
+      console.error("Gagal submit:", error);
       return toast.error(
         "Data belum terkirim. Periksa koneksi lalu coba lagi.",
       );
+    }
     localStorage.removeItem(KUNCI);
     setSukses(true);
   }

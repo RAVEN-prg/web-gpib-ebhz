@@ -29,6 +29,10 @@ const tanggal = (iso) => {
   return m ? `${m[3]}/${m[2]}/${m[1]}` : "-";
 };
 
+// Baptis / sidi / menikah: "Sudah (tanggal, tempat)" atau "Belum"
+const riwayat = (status, tgl, tempat) =>
+  status === "Sudah" ? `Sudah (${tanggal(tgl)}, ${tempat || "-"})` : status;
+
 // Kelompok field pada panel detail
 const KELOMPOK = [
   {
@@ -65,6 +69,20 @@ const KELOMPOK = [
       ["Masa bekerja", (a) => a.masa_bekerja],
       ["Hobi", (a) => a.hobi],
       ["Keahlian", (a) => a.keahlian],
+    ],
+  },
+  {
+    judul: "Baptis, sidi & pernikahan",
+    baris: [
+      [
+        "Baptis",
+        (a) => riwayat(a.status_baptis, a.tanggal_baptis, a.tempat_baptis),
+      ],
+      ["Sidi", (a) => riwayat(a.status_sidi, a.tanggal_sidi, a.tempat_sidi)],
+      [
+        "Pernikahan",
+        (a) => riwayat(a.status_menikah, a.tanggal_menikah, a.tempat_menikah),
+      ],
     ],
   },
   {

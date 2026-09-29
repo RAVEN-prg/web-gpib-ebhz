@@ -5,6 +5,7 @@ export const PENDIDIKAN = [
   "SD",
   "SMP",
   "SMA",
+  "D3",
   "Strata 1 (S1)",
   "Strata 2 (S2)",
   "Strata 3 (S3)",
@@ -46,3 +47,4 @@ export const PERAN = [
   "Lainnya",
 ];
 export const DARAH = ["A", "B", "AB", "O"];
+export const SUDAH_BELUM = ["Sudah", "Belum"];
