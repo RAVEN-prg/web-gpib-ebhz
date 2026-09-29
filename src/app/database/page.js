@@ -14,6 +14,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 
+// Gaya dasar kontrol input (sama dengan form-anggota)
+const KONTROL =
+  "h-10 border-neutral-200 bg-white shadow-none transition-all duration-200 hover:border-neutral-400 focus-visible:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900/10";
+
 // Nilai "Lainnya" diganti isian manual jika ada
 const pilih = (nilai, lainnya) =>
   nilai === "Lainnya" && lainnya ? `Lainnya: ${lainnya}` : nilai;
@@ -122,10 +126,12 @@ export default function Database() {
   }, [data, cari]);
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-4 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Database jemaat</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="mx-auto w-full min-w-0 max-w-4xl space-y-6 p-4 sm:p-8">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+          Database jemaat
+        </h1>
+        <p className="text-sm tabular-nums text-neutral-500">
           {muat
             ? "Memuat data..."
             : `${hasil.length} dari ${data.length} orang`}
@@ -133,40 +139,44 @@ export default function Database() {
       </div>
 
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
         <Input
-          className="pl-9"
+          className={`pl-9 ${KONTROL}`}
           placeholder="Cari nama, pelkat, peran, sektor, atau kepala keluarga"
           value={cari}
           onChange={(e) => setCari(e.target.value)}
         />
       </div>
 
-      <div className="overflow-x-auto rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
         <table className="w-full text-left text-sm">
-          <thead className="border-b bg-muted/50 text-muted-foreground">
+          <thead className="border-b border-neutral-200 bg-neutral-50 text-xs text-neutral-500">
             <tr>
               <th className="px-4 py-3 font-medium">Nama</th>
               <th className="px-4 py-3 font-medium">Pelkat</th>
-              <th className="px-4 py-3 font-medium">Peran</th>
+              <th className="hidden px-4 py-3 font-medium sm:table-cell">
+                Peran
+              </th>
               <th className="px-4 py-3 text-right font-medium">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody className="divide-y divide-neutral-200">
             {muat &&
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
                   <td colSpan={4} className="px-4 py-3">
-                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-6 w-full bg-neutral-100" />
                   </td>
                 </tr>
               ))}
 
             {!muat && galat && (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center">
-                  <p className="text-destructive">Data gagal dimuat.</p>
-                  <p className="text-muted-foreground">
+                <td colSpan={4} className="px-4 py-12 text-center">
+                  <p className="font-medium text-destructive">
+                    Data gagal dimuat.
+                  </p>
+                  <p className="mx-auto mt-1 max-w-sm text-neutral-500">
                     Periksa koneksi, lalu muat ulang halaman. Jika tetap gagal,
                     cek policy SELECT pada tabel di Supabase.
                   </p>
@@ -178,7 +188,7 @@ export default function Database() {
               <tr>
                 <td
                   colSpan={4}
-                  className="px-4 py-10 text-center text-muted-foreground"
+                  className="px-4 py-12 text-center text-neutral-500"
                 >
                   {cari
                     ? `Tidak ada hasil untuk "${cari}".`
@@ -188,11 +198,16 @@ export default function Database() {
             )}
 
             {hasil.map((a) => (
-              <tr key={a.id} className="hover:bg-muted/40">
+              <tr
+                key={a.id}
+                className="transition-colors duration-200 hover:bg-neutral-50"
+              >
                 <td className="px-4 py-3">
-                  <div className="font-medium">{a.nama_lengkap}</div>
+                  <div className="font-medium text-neutral-900">
+                    {a.nama_lengkap}
+                  </div>
                   {a.is_kepala_keluarga && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-neutral-500">
                       Kepala Keluarga
                     </div>
                   )}
@@ -200,7 +215,9 @@ export default function Database() {
                 <td className="px-4 py-3">
                   <Badge variant="secondary">{a.kategorial}</Badge>
                 </td>
-                <td className="px-4 py-3">{peranOf(a) || "-"}</td>
+                <td className="hidden px-4 py-3 text-neutral-600 sm:table-cell">
+                  {peranOf(a) || "-"}
+                </td>
                 <td className="px-4 py-3 text-right">
                   <Button
                     size="sm"
@@ -217,12 +234,14 @@ export default function Database() {
       </div>
 
       <Sheet open={!!terpilih} onOpenChange={(o) => !o && setTerpilih(null)}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+        <SheetContent className="w-full overflow-y-auto border-neutral-200 bg-white sm:max-w-md">
           {terpilih && (
             <>
-              <SheetHeader>
-                <SheetTitle>{terpilih.nama_lengkap}</SheetTitle>
-                <SheetDescription>
+              <SheetHeader className="border-b border-neutral-200">
+                <SheetTitle className="text-lg font-semibold tracking-tight text-neutral-900">
+                  {terpilih.nama_lengkap}
+                </SheetTitle>
+                <SheetDescription className="text-neutral-500">
                   {terpilih.is_kepala_keluarga
                     ? "Kepala Keluarga"
                     : pilih(
@@ -235,15 +254,17 @@ export default function Database() {
               <div className="space-y-6 px-4 pb-6">
                 {KELOMPOK.map((g) => (
                   <section key={g.judul} className="space-y-2">
-                    <h2 className="text-sm font-semibold">{g.judul}</h2>
-                    <dl className="divide-y rounded-lg border text-sm">
+                    <h2 className="text-sm font-semibold text-neutral-900">
+                      {g.judul}
+                    </h2>
+                    <dl className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white text-sm">
                       {g.baris.map(([label, ambil]) => (
                         <div
                           key={label}
-                          className="grid grid-cols-[9rem_1fr] gap-3 px-3 py-2"
+                          className="grid grid-cols-[9rem_1fr] gap-3 px-3 py-2.5"
                         >
-                          <dt className="text-muted-foreground">{label}</dt>
-                          <dd className="min-w-0 break-words">
+                          <dt className="text-neutral-500">{label}</dt>
+                          <dd className="min-w-0 break-words text-neutral-900">
                             {ambil(terpilih) || "-"}
                           </dd>
                         </div>

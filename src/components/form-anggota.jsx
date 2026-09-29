@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { aktif, terisi, kosong } from "@/lib/validasi";
+
+// Gaya dasar kontrol input (Geist: border tipis, tanpa bayangan)
+const KONTROL =
+  "border-neutral-200 bg-white shadow-none transition-all duration-200 hover:border-neutral-400 focus-visible:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900/10";
+const SALAH =
+  "border-destructive hover:border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20";
 
 // Keterangan kecil per kolom (kunci = nama kolom di database)
 const BANTU = {
@@ -87,7 +94,7 @@ function InputTanggal({ value, onChange, className }) {
       <Input
         inputMode="numeric"
         placeholder="DD/MM/YYYY"
-        className={className}
+        className={`h-10 ${KONTROL} ${salah ? SALAH : ""} ${className}`}
         value={teks}
         onChange={handle}
       />
@@ -98,13 +105,13 @@ function InputTanggal({ value, onChange, className }) {
   );
 }
 
-// Ganti {nama} pada label dengan nama tebal berwarna
+// Ganti {nama} pada label dengan nama tebal
 function Pertanyaan({ label, nama }) {
   const [a, b = ""] = label.split("{nama}");
   return (
-    <Label className="block whitespace-normal break-words leading-snug">
+    <Label className="block whitespace-normal break-words text-sm font-medium leading-snug text-neutral-900">
       {a}
-      <span className="font-bold text-emerald-700 dark:text-emerald-400">
+      <span className="rounded bg-neutral-100 px-1 py-0.5 font-semibold text-neutral-900">
         {nama}
       </span>
       {b}
@@ -115,7 +122,7 @@ function Pertanyaan({ label, nama }) {
 export default function FormAnggota({ orang, kk, ubah, selesai }) {
   const [cek, setCek] = useState(false);
   const daftar = aktif(orang);
-  const merah = (f) => (cek && !terisi(f, orang) ? "border-destructive" : "");
+  const merah = (f) => (cek && !terisi(f, orang) ? SALAH : "");
 
   // Otomatis isi dari Kepala Keluarga (tetap bisa diubah)
   useEffect(() => {
@@ -135,96 +142,109 @@ export default function FormAnggota({ orang, kk, ubah, selesai }) {
   };
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-2xl space-y-5 overflow-x-hidden p-4 sm:p-6">
-      <div>
-        <h1 className="break-words text-2xl font-semibold">
+    <div className="mx-auto w-full min-w-0 max-w-2xl space-y-6 overflow-x-hidden p-4 sm:p-8">
+      <div className="space-y-1">
+        <h1 className="break-words text-2xl font-semibold tracking-tight text-neutral-900">
           {orang.nama_lengkap}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-neutral-500">
           Semua kolom wajib diisi. Isi "-" jika tidak ada.
         </p>
       </div>
 
-      {daftar.map((f) => (
-        <div key={f.k} className="min-w-0 space-y-2">
-          <Pertanyaan label={f.label} nama={orang.nama_lengkap} />
-          {BANTU[f.k] && (
-            <p className="break-words text-xs text-muted-foreground">
-              {BANTU[f.k]}
-            </p>
-          )}
+      <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+        {daftar.map((f) => (
+          <div key={f.k} className="min-w-0 space-y-2 p-4 sm:p-5">
+            <Pertanyaan label={f.label} nama={orang.nama_lengkap} />
+            {BANTU[f.k] && (
+              <p className="break-words text-xs leading-relaxed text-neutral-500">
+                {BANTU[f.k]}
+              </p>
+            )}
 
-          {f.t === "select" ? (
-            <Select
-              value={orang[f.k] || ""}
-              onValueChange={(v) => ubah({ [f.k]: v })}
-            >
-              <SelectTrigger
-                className={`h-auto min-h-9 w-full whitespace-normal py-2 text-left [&>span]:line-clamp-none [&>span]:whitespace-normal [&>span]:break-words ${merah(f)}`}
+            {f.t === "select" ? (
+              <Select
+                value={orang[f.k] || ""}
+                onValueChange={(v) => ubah({ [f.k]: v })}
               >
-                <SelectValue placeholder="Pilih" />
-              </SelectTrigger>
-              <SelectContent className="max-w-[calc(100vw-2rem)]">
-                {f.o.map((x) => (
-                  <SelectItem
-                    key={x}
-                    value={x}
-                    className="whitespace-normal break-words"
-                  >
-                    {x}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : f.t === "area" ? (
-            <Textarea
-              className={merah(f)}
-              value={orang[f.k] || ""}
-              onChange={(e) => ubah({ [f.k]: e.target.value })}
-            />
-          ) : f.t === "date" ? (
-            <InputTanggal
-              className={merah(f)}
-              value={orang[f.k]}
-              onChange={(v) => ubah({ [f.k]: v })}
-            />
-          ) : (
-            <Input
-              type={f.t}
-              className={merah(f)}
-              value={orang[f.k] || ""}
-              onChange={(e) => ubah({ [f.k]: e.target.value })}
-            />
-          )}
+                <SelectTrigger
+                  className={`h-auto min-h-10 w-full whitespace-normal py-2 text-left [&>span]:line-clamp-none [&>span]:whitespace-normal [&>span]:break-words ${KONTROL} ${merah(f)}`}
+                >
+                  <SelectValue placeholder="Pilih" />
+                </SelectTrigger>
+                <SelectContent className="max-w-[calc(100vw-2rem)] border-neutral-200 shadow-md">
+                  {f.o.map((x) => (
+                    <SelectItem
+                      key={x}
+                      value={x}
+                      className="whitespace-normal break-words"
+                    >
+                      {x}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : f.t === "area" ? (
+              <Textarea
+                className={`min-h-24 ${KONTROL} ${merah(f)}`}
+                value={orang[f.k] || ""}
+                onChange={(e) => ubah({ [f.k]: e.target.value })}
+              />
+            ) : f.t === "date" ? (
+              <InputTanggal
+                className={merah(f)}
+                value={orang[f.k]}
+                onChange={(v) => ubah({ [f.k]: v })}
+              />
+            ) : (
+              <Input
+                type={f.t}
+                className={`h-10 ${KONTROL} ${merah(f)}`}
+                value={orang[f.k] || ""}
+                onChange={(e) => ubah({ [f.k]: e.target.value })}
+              />
+            )}
 
-          {f.lain && orang[f.k] === "Lainnya" && (
-            <Input
-              placeholder="Sebutkan"
-              className={
-                cek && kosong(orang[f.lain]) ? "border-destructive" : ""
-              }
-              value={orang[f.lain] || ""}
-              onChange={(e) => ubah({ [f.lain]: e.target.value })}
-            />
-          )}
-          {f.nol && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => ubah({ [f.k]: "-" })}
-            >
-              Tidak ada / -
-            </Button>
-          )}
-        </div>
-      ))}
+            {f.lain && orang[f.k] === "Lainnya" && (
+              <Input
+                placeholder="Sebutkan"
+                className={`h-10 ${KONTROL} ${
+                  cek && kosong(orang[f.lain]) ? SALAH : ""
+                }`}
+                value={orang[f.lain] || ""}
+                onChange={(e) => ubah({ [f.lain]: e.target.value })}
+              />
+            )}
+            {f.nol && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-neutral-200 text-neutral-600 shadow-none transition-all duration-200 hover:border-neutral-400 hover:bg-white hover:text-neutral-900"
+                onClick={() => ubah({ [f.k]: "-" })}
+              >
+                Tidak ada / -
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
 
-      <div className="flex flex-wrap justify-between gap-2 pt-2">
-        <Button variant="outline" onClick={selesai}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          variant="outline"
+          className="gap-2 border-neutral-200 shadow-none transition-all duration-200 hover:border-neutral-400 hover:bg-white"
+          onClick={selesai}
+        >
+          <ArrowLeft className="size-4" />
           Kembali ke daftar
         </Button>
-        <Button onClick={lanjut}>Selanjutnya</Button>
+        <Button
+          className="bg-neutral-900 text-white shadow-none transition-all duration-200 hover:bg-neutral-700"
+          onClick={lanjut}
+        >
+          Selanjutnya
+        </Button>
       </div>
     </div>
   );

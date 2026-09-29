@@ -2,14 +2,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Check, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { FIELDS, persen } from "@/lib/validasi";
 import FormAnggota from "@/components/form-anggota";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 const KUNCI = "draft-data-jemaat";
@@ -19,6 +18,50 @@ const baru = (kk = false) => ({
   nama_lengkap: "",
   ...(kk ? { status_keluarga: "Kepala Keluarga" } : {}),
 });
+
+// Gaya dasar kontrol input (sama dengan form-anggota)
+const KONTROL =
+  "h-10 border-neutral-200 bg-white shadow-none transition-all duration-200 hover:border-neutral-400 focus-visible:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900/10";
+
+const LANGKAH = { keluarga: 1, pilih: 2, kirim: 3 };
+
+function Bingkai({ className, children }) {
+  return (
+    <div className={`mx-auto w-full min-w-0 space-y-6 p-4 sm:p-8 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function Judul({ tahap, judul, deskripsi }) {
+  return (
+    <div className="space-y-2">
+      {tahap && (
+        <div className="space-y-2">
+          <div className="flex gap-1.5">
+            {[1, 2, 3].map((n) => (
+              <span
+                key={n}
+                className={`h-1 w-8 rounded-full transition-all duration-200 ${
+                  n <= LANGKAH[tahap] ? "bg-neutral-900" : "bg-neutral-200"
+                }`}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-neutral-500">
+            Langkah {LANGKAH[tahap]} dari 3
+          </p>
+        </div>
+      )}
+      <div className="space-y-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+          {judul}
+        </h1>
+        {deskripsi && <p className="text-sm text-neutral-500">{deskripsi}</p>}
+      </div>
+    </div>
+  );
+}
 
 export default function IsiData() {
   const [orang, setOrang] = useState([baru(true)]);
@@ -87,13 +130,23 @@ export default function IsiData() {
 
   if (sukses)
     return (
-      <div className="mx-auto max-w-xl space-y-4 p-6">
-        <h1 className="text-2xl font-semibold">Data tersimpan</h1>
-        <p className="text-muted-foreground">
-          Terima kasih. Data keluarga {orang[0].nama_lengkap} sudah masuk ke
-          database jemaat.
-        </p>
-        <div className="flex gap-2">
+      <Bingkai className="max-w-xl pt-12 sm:pt-16">
+        <div className="flex size-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900">
+          <Check className="size-5" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+            Data tersimpan
+          </h1>
+          <p className="text-pretty text-sm leading-relaxed text-neutral-500">
+            Terima kasih. Data keluarga{" "}
+            <span className="font-medium text-neutral-900">
+              {orang[0].nama_lengkap}
+            </span>{" "}
+            sudah masuk ke database jemaat.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
           <Link href="/" className={buttonVariants()}>
             Kembali ke Home
           </Link>
@@ -101,7 +154,7 @@ export default function IsiData() {
             Isi data keluarga lain
           </Button>
         </div>
-      </div>
+      </Bingkai>
     );
 
   if (tahap === "form") {
@@ -119,51 +172,58 @@ export default function IsiData() {
 
   if (tahap === "pilih")
     return (
-      <div className="mx-auto max-w-3xl space-y-4 p-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Pilih anggota untuk diisi</h1>
-          <p className="text-sm text-muted-foreground">
-            Lengkapi data setiap orang sampai 100%.
-          </p>
-        </div>
+      <Bingkai className="max-w-3xl">
+        <Judul
+          tahap="pilih"
+          judul="Pilih anggota untuk diisi"
+          deskripsi="Lengkapi data setiap orang sampai 100%."
+        />
         <div className="grid gap-3 sm:grid-cols-2">
           {orang.map((o) => {
             const p = persen(o);
             return (
               <button
                 key={o.id}
-                className="text-left"
+                type="button"
+                className="group w-full rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/10"
                 onClick={() => {
                   setAktifId(o.id);
                   setTahap("form");
                 }}
               >
-                <Card className="hover:bg-accent">
-                  <CardContent className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{o.nama_lengkap}</span>
-                      <Badge variant={p === 100 ? "default" : "secondary"}>
-                        {o.kk
-                          ? "Kepala Keluarga"
-                          : o.status_keluarga || "Anggota"}
-                      </Badge>
-                    </div>
-                    <Progress value={p} />
-                    <p className="text-sm text-muted-foreground">{p}% terisi</p>
-                  </CardContent>
-                </Card>
+                <div className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4 transition-all duration-200 group-hover:border-neutral-400 group-focus-visible:border-neutral-900">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="min-w-0 break-words text-sm font-medium text-neutral-900">
+                      {o.nama_lengkap}
+                    </span>
+                    <Badge variant={p === 100 ? "default" : "secondary"}>
+                      {o.kk
+                        ? "Kepala Keluarga"
+                        : o.status_keluarga || "Anggota"}
+                    </Badge>
+                  </div>
+                  <div className="h-1 overflow-hidden rounded-full bg-neutral-100">
+                    <div
+                      className="h-full rounded-full bg-neutral-900 transition-all duration-200"
+                      style={{ width: `${p}%` }}
+                    />
+                  </div>
+                  <p className="text-xs tabular-nums text-neutral-500">
+                    {p}% terisi
+                  </p>
+                </div>
               </button>
             );
           })}
         </div>
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-6">
           <Button variant="outline" onClick={() => setTahap("keluarga")}>
             Kembali
           </Button>
           <div className="flex items-center gap-3">
             {!semua100 && (
-              <span className="text-sm text-muted-foreground">
-                Semua card harus 100%
+              <span className="text-sm text-neutral-500">
+                Semua kartu harus 100%
               </span>
             )}
             <Button disabled={!semua100} onClick={() => setTahap("kirim")}>
@@ -171,100 +231,109 @@ export default function IsiData() {
             </Button>
           </div>
         </div>
-      </div>
+      </Bingkai>
     );
 
   if (tahap === "kirim")
     return (
-      <div className="mx-auto max-w-xl p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Kirim data</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              {orang.length} orang dari keluarga {orang[0].nama_lengkap} siap
-              dikirim.
-            </p>
-            <div className="space-y-2">
-              <Label>Nama Anda (yang mengisi form ini)</Label>
-              <Input
-                value={pengisi}
-                onChange={(e) => setPengisi(e.target.value)}
-              />
-            </div>
-            <label className="flex gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={setuju}
-                onChange={(e) => setSetuju(e.target.checked)}
-              />
+      <Bingkai className="max-w-xl">
+        <Judul
+          tahap="kirim"
+          judul="Kirim data"
+          deskripsi={`${orang.length} orang dari keluarga ${orang[0].nama_lengkap} siap dikirim.`}
+        />
+        <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+          <div className="space-y-2 p-4 sm:p-5">
+            <Label>Nama Anda (yang mengisi form ini)</Label>
+            <Input
+              className={KONTROL}
+              value={pengisi}
+              onChange={(e) => setPengisi(e.target.value)}
+            />
+          </div>
+          <label className="flex cursor-pointer items-start gap-3 p-4 text-sm leading-relaxed text-neutral-500 sm:p-5">
+            <input
+              type="checkbox"
+              className="mt-0.5 size-4 shrink-0 cursor-pointer accent-neutral-900"
+              checked={setuju}
+              onChange={(e) => setSetuju(e.target.checked)}
+            />
+            <span>
               Saya menyetujui data ini disimpan dan digunakan untuk pendataan
               jemaat GPIB Ebenhaezer Palangka Raya.
-            </label>
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setTahap("pilih")}>
-                Kembali
-              </Button>
-              <Button
-                disabled={!pengisi.trim() || !setuju || kirim}
-                onClick={submit}
-              >
-                {kirim ? "Mengirim..." : "Kirim data"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </span>
+          </label>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <Button variant="outline" onClick={() => setTahap("pilih")}>
+            Kembali
+          </Button>
+          <Button
+            disabled={!pengisi.trim() || !setuju || kirim}
+            onClick={submit}
+          >
+            {kirim ? "Mengirim..." : "Kirim data"}
+          </Button>
+        </div>
+      </Bingkai>
     );
 
   return (
-    <div className="mx-auto max-w-xl p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Data keluarga</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Nama Kepala Keluarga</Label>
-            <Input
-              value={orang[0].nama_lengkap}
-              onChange={(e) =>
-                ubah(orang[0].id, { nama_lengkap: e.target.value })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Anggota keluarga (istri/suami, anak, cucu, famili)</Label>
-            {orang.slice(1).map((o) => (
-              <div key={o.id} className="flex gap-2">
-                <Input
-                  placeholder="Nama anggota"
-                  value={o.nama_lengkap}
-                  onChange={(e) => ubah(o.id, { nama_lengkap: e.target.value })}
-                />
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    setOrang((l) => l.filter((x) => x.id !== o.id))
-                  }
-                >
-                  Hapus
-                </Button>
-              </div>
-            ))}
-            <Button
-              variant="outline"
-              onClick={() => setOrang((l) => [...l, baru()])}
-            >
-              Tambah anggota
-            </Button>
-          </div>
-          <Button disabled={!namaOk} onClick={() => setTahap("pilih")}>
-            Selanjutnya
+    <Bingkai className="max-w-xl">
+      <Judul
+        tahap="keluarga"
+        judul="Data keluarga"
+        deskripsi="Cukup nama dulu. Data lengkap diisi di langkah berikutnya."
+      />
+      <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+        <div className="space-y-2 p-4 sm:p-5">
+          <Label>Nama Kepala Keluarga</Label>
+          <Input
+            className={KONTROL}
+            value={orang[0].nama_lengkap}
+            onChange={(e) =>
+              ubah(orang[0].id, { nama_lengkap: e.target.value })
+            }
+          />
+        </div>
+        <div className="space-y-3 p-4 sm:p-5">
+          <Label className="leading-snug">
+            Anggota keluarga (istri/suami, anak, cucu, famili)
+          </Label>
+          {orang.slice(1).map((o) => (
+            <div key={o.id} className="flex gap-2">
+              <Input
+                placeholder="Nama anggota"
+                className={KONTROL}
+                value={o.nama_lengkap}
+                onChange={(e) => ubah(o.id, { nama_lengkap: e.target.value })}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Hapus anggota"
+                className="size-10 shrink-0 text-neutral-500 hover:text-neutral-900"
+                onClick={() => setOrang((l) => l.filter((x) => x.id !== o.id))}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => setOrang((l) => [...l, baru()])}
+          >
+            <Plus className="size-4" />
+            Tambah anggota
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <Button disabled={!namaOk} onClick={() => setTahap("pilih")}>
+          Selanjutnya
+        </Button>
+      </div>
+    </Bingkai>
   );
 }
