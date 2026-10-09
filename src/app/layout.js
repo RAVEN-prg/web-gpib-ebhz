@@ -26,7 +26,9 @@ export default function RootLayout({ children }) {
           <AppSidebar />
           <SidebarInset className="bg-neutral-50">
             <header className="sticky top-0 z-10 flex h-14 items-center border-b border-neutral-200 bg-white/80 px-4 backdrop-blur">
-              <SidebarTrigger className="text-neutral-500 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900" />
+              <SidebarTrigger className="h-10 gap-2 px-3 text-neutral-700 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900 [&>svg]:size-5">
+                <span className="text-sm font-medium">Menu</span>
+              </SidebarTrigger>
             </header>
             {children}
           </SidebarInset>
