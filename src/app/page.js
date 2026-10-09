@@ -1,9 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { buttonVariants } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <section className="relative isolate flex min-h-[80vh] overflow-hidden">
+    <section className="relative isolate flex min-h-[calc(100svh-3.5rem)] overflow-hidden">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="home-glow home-glow-one absolute -right-24 -top-28 size-96 rounded-full bg-emerald-200/40 blur-3xl sm:right-8 sm:top-0" />
         <div className="home-glow home-glow-two absolute -bottom-40 -left-24 size-[28rem] rounded-full bg-amber-100/60 blur-3xl" />
@@ -16,11 +17,21 @@ export default function Home() {
         <div className="home-speck home-speck-two absolute right-[10%] top-[62%] size-1.5 rounded-full bg-amber-500/50" />
         <div className="home-speck home-speck-three absolute left-[12%] top-[70%] size-2 rounded-full bg-emerald-600/30" />
       </div>
-      <div className="relative z-10 mx-auto flex min-h-[80vh] w-full max-w-2xl flex-col items-start justify-center gap-6 p-6 sm:p-8">
-        <h1 className="text-balance text-4xl font-semibold tracking-tighter text-neutral-900 sm:text-5xl">
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 right-0 z-0 h-[46%] w-[72%] sm:inset-y-0 sm:right-0 sm:h-auto sm:w-[54%]">
+        <Image
+          src="/gereja.png"
+          alt=""
+          width={1080}
+          height={1350}
+          preload
+          className="h-full w-full translate-y-4 object-contain object-bottom sm:translate-y-6 sm:object-right-bottom"
+        />
+      </div>
+      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-3.5rem)] w-full max-w-6xl flex-col items-start justify-center gap-6 p-6 pb-[43svh] sm:pb-8 sm:pr-[48%] sm:pl-8">
+        <h1 className="max-w-2xl text-balance text-4xl font-semibold tracking-tighter text-neutral-900 sm:text-5xl">
           Database Gereja GPIB Ebenhaezer Palangka Raya
         </h1>
-        <p className="max-w-xl text-pretty text-base leading-relaxed text-neutral-500">
+        <p className="max-w-xl text-pretty text-base leading-relaxed text-neutral-600">
           Cukup satu Kepala Keluarga yang mengisi. Data istri atau suami, anak,
           dan anggota keluarga lain diisi dalam satu form.
         </p>
