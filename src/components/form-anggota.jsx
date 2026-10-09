@@ -133,7 +133,14 @@ function Pertanyaan({ label, nama }) {
   );
 }
 
-export default function FormAnggota({ orang, kk, ubah, selesai }) {
+export default function FormAnggota({
+  orang,
+  kk,
+  ubah,
+  selesai,
+  kembali = selesai,
+  tombolSelesai = "Selanjutnya",
+}) {
   const [cek, setCek] = useState(false);
   const daftar = aktif(orang);
   const merah = (f) => (cek && !terisi(f, orang) ? SALAH : "");
@@ -162,7 +169,7 @@ export default function FormAnggota({ orang, kk, ubah, selesai }) {
           {orang.nama_lengkap}
         </h1>
         <p className="text-sm text-neutral-500">
-          Semua kolom wajib diisi. Isi "-" jika tidak ada.
+          Semua kolom wajib diisi. Isi &quot;-&quot; jika tidak ada.
         </p>
       </div>
 
@@ -248,7 +255,7 @@ export default function FormAnggota({ orang, kk, ubah, selesai }) {
         <Button
           variant="outline"
           className="gap-2 border-neutral-200 shadow-none transition-all duration-200 hover:border-neutral-400 hover:bg-white"
-          onClick={selesai}
+          onClick={kembali}
         >
           <ArrowLeft className="size-4" />
           Kembali ke daftar
@@ -257,7 +264,7 @@ export default function FormAnggota({ orang, kk, ubah, selesai }) {
           className="bg-neutral-900 text-white shadow-none transition-all duration-200 hover:bg-neutral-700"
           onClick={lanjut}
         >
-          Selanjutnya
+          {tombolSelesai}
         </Button>
       </div>
     </div>

@@ -1,16 +1,10 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Filter, Plus, Search, X } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import {
-  KATEGORIAL,
-  PENDIDIKAN,
-  PERAN,
-  SEKTOR,
-  SUDAH_BELUM,
-} from "@/lib/opsi";
+import { cocokAnggota, peranOf, pilih } from "@/lib/filter-jemaat";
+import DatabaseControls from "@/components/database-controls";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -20,34 +14,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const PILIHAN_FILTER = [
-  { kolom: "jenis_kelamin", label: "Jenis Kelamin", opsi: ["Laki-laki", "Perempuan"] },
-  { kolom: "sektor", label: "Sektor", opsi: SEKTOR },
-  { kolom: "pendidikan_terakhir", label: "Pendidikan Terakhir", opsi: PENDIDIKAN },
-  { kolom: "kategorial", label: "Kategorial", opsi: KATEGORIAL },
-  { kolom: "peran_pelayanan", label: "Peran Pelayanan", opsi: PERAN },
-  { kolom: "status_menikah", label: "Status Menikah", opsi: SUDAH_BELUM },
-  { kolom: "status_sidi", label: "Status Sidi", opsi: SUDAH_BELUM },
-];
-
-// Gaya dasar kontrol input (sama dengan form-anggota)
-const KONTROL =
-  "h-10 border-neutral-200 bg-white shadow-none transition-all duration-200 hover:border-neutral-400 focus-visible:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900/10";
-
-// Nilai "Lainnya" diganti isian manual jika ada
-const pilih = (nilai, lainnya) =>
-  nilai === "Lainnya" && lainnya ? `Lainnya: ${lainnya}` : nilai;
-
-const peranOf = (a) => pilih(a.peran_pelayanan, a.peran_pelayanan_lainnya);
-
 const tanggal = (iso) => {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
   return m ? `${m[3]}/${m[2]}/${m[1]}` : "-";
@@ -158,24 +124,7 @@ export default function Database() {
   }, []);
 
   const hasil = useMemo(() => {
-    const q = cari.trim().toLowerCase();
-    return data.filter((a) => {
-      const cocokCari = !q || [
-        a.nama_lengkap,
-        a.kategorial,
-        peranOf(a),
-        a.sektor,
-        a.keluarga?.nama_kepala_keluarga,
-      ].some((v) => (v || "").toLowerCase().includes(q));
-      const cocokFilter = filters.every((filter) => {
-        if (!filter.kolom || !filter.nilai) return true;
-        const nilai = filter.kolom === "peran_pelayanan" ? peranOf(a) : a[filter.kolom];
-        return filter.nilai === "Lainnya"
-          ? nilai === "Lainnya" || nilai?.startsWith("Lainnya:")
-          : nilai === filter.nilai;
-      });
-      return cocokCari && cocokFilter;
-    });
+    return data.filter((anggota) => cocokAnggota(anggota, cari, filters));
   }, [data, cari, filters]);
 
   const barisTampil = useMemo(() => {
@@ -216,138 +165,19 @@ export default function Database() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
-          <Input
-            className={`pl-9 ${KONTROL}`}
-            placeholder="Cari nama, pelkat, peran, sektor, atau kepala keluarga"
-            value={cari}
-            onChange={(e) => setCari(e.target.value)}
-          />
-        </div>
-        <Button
-          type="button"
-          variant={hanyaKepala ? "default" : "outline"}
-          className="h-10 shrink-0"
-          aria-pressed={hanyaKepala}
-          onClick={() => {
-            setHanyaKepala((aktif) => !aktif);
-            setKeluargaTerbuka(new Set());
-          }}
-        >
-          Kepala keluarga
-        </Button>
-        <Button
-          type="button"
-          variant={filterTerbuka || filters.some((filter) => filter.nilai) ? "default" : "outline"}
-          className="h-10 shrink-0"
-          aria-expanded={filterTerbuka}
-          onClick={() => setFilterTerbuka((terbuka) => !terbuka)}
-        >
-          <Filter className="size-4" />
-          Filter{filters.some((filter) => filter.nilai)
-            ? ` (${filters.filter((filter) => filter.nilai).length})`
-            : ""}
-        </Button>
-      </div>
-
-      {filterTerbuka && (
-        <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4" aria-label="Filter database jemaat">
-          {filters.length === 0 ? (
-            <p className="text-sm text-neutral-500">Tambahkan kolom untuk mulai memfilter data.</p>
-          ) : (
-            <div className="space-y-2">
-              {filters.map((filter, index) => {
-                const pilihan = PILIHAN_FILTER.find((item) => item.kolom === filter.kolom);
-                const kolomTersedia = PILIHAN_FILTER.filter(
-                  (item) =>
-                    item.kolom === filter.kolom ||
-                    !filters.some((lain, i) => i !== index && lain.kolom === item.kolom),
-                );
-                return (
-                  <div key={index} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                    <Select
-                      value={filter.kolom}
-                      onValueChange={(kolom) =>
-                        setFilters((sebelumnya) =>
-                          sebelumnya.map((item, i) =>
-                            i === index ? { kolom, nilai: "" } : item,
-                          ),
-                        )
-                      }
-                    >
-                      <SelectTrigger className={`w-full ${KONTROL}`}>
-                        <SelectValue placeholder="Pilih kolom" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kolomTersedia.map((item) => (
-                          <SelectItem key={item.kolom} value={item.kolom}>
-                            {item.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={filter.nilai}
-                      disabled={!pilihan}
-                      onValueChange={(nilai) =>
-                        setFilters((sebelumnya) =>
-                          sebelumnya.map((item, i) =>
-                            i === index ? { ...item, nilai } : item,
-                          ),
-                        )
-                      }
-                    >
-                      <SelectTrigger className={`w-full ${KONTROL}`}>
-                        <SelectValue placeholder="Pilih nilai" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {pilihan?.opsi.map((nilai) => (
-                          <SelectItem key={nilai} value={nilai}>
-                            {nilai}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      className="justify-self-end text-neutral-500"
-                      aria-label="Hapus filter"
-                      onClick={() =>
-                        setFilters((sebelumnya) =>
-                          sebelumnya.filter((_, i) => i !== index),
-                        )
-                      }
-                    >
-                      <X className="size-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={filters.length >= PILIHAN_FILTER.length}
-              onClick={() => setFilters((sebelumnya) => [...sebelumnya, { kolom: "", nilai: "" }])}
-            >
-              <Plus className="size-4" />
-              Tambah filter
-            </Button>
-            {filters.length > 0 && (
-              <Button type="button" variant="ghost" size="sm" onClick={() => setFilters([])}>
-                Hapus semua
-              </Button>
-            )}
-          </div>
-        </section>
-      )}
+      <DatabaseControls
+        cari={cari}
+        setCari={setCari}
+        hanyaKepala={hanyaKepala}
+        setHanyaKepala={(pembaruan) => {
+          setHanyaKepala(pembaruan);
+          setKeluargaTerbuka(new Set());
+        }}
+        filters={filters}
+        setFilters={setFilters}
+        filterTerbuka={filterTerbuka}
+        setFilterTerbuka={setFilterTerbuka}
+      />
 
       <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
         <table className="w-full text-left text-sm">

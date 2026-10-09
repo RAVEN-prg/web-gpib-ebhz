@@ -1,7 +1,7 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { House, Database, ClipboardList } from "lucide-react";
+import { House, Database, ClipboardList, ShieldCheck } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,7 @@ const MENU = [
   { u: "/", n: "Home", i: House },
   { u: "/database", n: "Database jemaat", i: Database },
   { u: "/isi-data", n: "Isi data jemaat", i: ClipboardList },
+  { u: "/admin", n: "Admin", i: ShieldCheck },
 ];
 
 export default function AppSidebar() {
