@@ -173,8 +173,39 @@ export default function FormAnggota({
         </p>
       </div>
 
-      <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
-        {daftar.map((f) => (
+      {orang.kk && (
+        <section className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
+          <div className="space-y-1">
+            <Label htmlFor="status-jemaat-kepala" className="text-sm font-medium text-neutral-900">
+              Apakah Kepala Keluarga merupakan jemaat GPIB Ebenhaezer?
+            </Label>
+            <p className="text-xs leading-relaxed text-neutral-500">
+              Jika bukan jemaat, pilih Tidak. Pertanyaan data pribadi Kepala Keluarga akan dilewati.
+            </p>
+          </div>
+          <Select
+            value={orang.is_jemaat === false ? "tidak" : "ya"}
+            onValueChange={(nilai) => ubah({ is_jemaat: nilai === "ya" })}
+          >
+            <SelectTrigger id="status-jemaat-kepala" className={`w-full ${KONTROL}`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ya">Ya, jemaat GPIB Ebenhaezer</SelectItem>
+              <SelectItem value="tidak">Tidak</SelectItem>
+            </SelectContent>
+          </Select>
+          {orang.is_jemaat === false && (
+            <p className="rounded-md bg-neutral-50 p-3 text-sm text-neutral-600">
+              Data profil dilewati. Kepala Keluarga tetap tercatat sebagai penanggung jawab keluarga.
+            </p>
+          )}
+        </section>
+      )}
+
+      {daftar.length > 0 && (
+        <div className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+          {daftar.map((f) => (
           <div key={f.k} className="min-w-0 space-y-2 p-4 sm:p-5">
             <Pertanyaan label={f.label} nama={orang.nama_lengkap} />
             {BANTU[f.k] && (
@@ -248,8 +279,9 @@ export default function FormAnggota({
               </Button>
             )}
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Button

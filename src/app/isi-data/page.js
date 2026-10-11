@@ -15,6 +15,7 @@ const KUNCI = "draft-data-jemaat";
 const baru = (kk = false) => ({
   id: Math.random().toString(36).slice(2),
   kk,
+  is_jemaat: true,
   nama_lengkap: "",
   ...(kk ? { status_keluarga: "Kepala Keluarga" } : {}),
 });
@@ -80,6 +81,8 @@ export default function IsiData() {
     try {
       const d = JSON.parse(localStorage.getItem(KUNCI));
       if (d) {
+        // Restore the browser draft after mount to avoid an SSR hydration mismatch.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOrang(d.orang);
         setTahap(d.tahap === "form" ? "pilih" : d.tahap);
       }
@@ -127,12 +130,23 @@ export default function IsiData() {
 
       return {
         is_kepala_keluarga: Boolean(o.kk),
+        is_jemaat: o.is_jemaat !== false,
         nama_lengkap: o.nama_lengkap.trim(),
         ...data,
       };
     });
 
-    const { error } = await supabase.rpc("submit_keluarga", {
+    if (orang[0].is_jemaat === false) {
+      const kepala = p_anggota[0];
+      FIELDS.forEach((field) => {
+        kepala[field.k] = null;
+        if (field.lain) kepala[field.lain] = null;
+      });
+      kepala.status_keluarga = "Bukan Jemaat";
+      kepala.is_jemaat = false;
+    }
+
+    const { error } = await supabase.rpc("submit_keluarga_v2", {
       p_keluarga: {
         nama_kepala_keluarga: orang[0].nama_lengkap.trim(),
         diisi_oleh: pengisi.trim(),
@@ -231,7 +245,9 @@ export default function IsiData() {
                     </span>
                     <Badge variant={p === 100 ? "default" : "secondary"}>
                       {o.kk
-                        ? "Kepala Keluarga"
+                        ? o.is_jemaat === false
+                          ? "Kepala Keluarga · Bukan Jemaat"
+                          : "Kepala Keluarga"
                         : o.status_keluarga || "Anggota"}
                     </Badge>
                   </div>

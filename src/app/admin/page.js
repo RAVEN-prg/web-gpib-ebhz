@@ -14,6 +14,9 @@ import { supabase } from "@/lib/supabase";
 import { cocokAnggota, peranOf, pilih } from "@/lib/filter-jemaat";
 import { FIELDS } from "@/lib/validasi";
 
+const KONTROL =
+  "h-10 border-neutral-200 bg-white shadow-none transition-all duration-200 hover:border-neutral-400 focus-visible:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900/10";
+
 export default function Admin() {
   const [status, setStatus] = useState("checking");
   const [username, setUsername] = useState("");
@@ -134,6 +137,10 @@ export default function Admin() {
           field.lain ? [field.k, field.lain].map((key) => [key, mengedit[key] || null]) : [[field.k, mengedit[field.k] || null]],
       ),
     );
+    payload.is_jemaat = mengedit.is_jemaat !== false;
+    if (mengedit.is_kepala_keluarga && !payload.is_jemaat) {
+      payload.status_keluarga = "Bukan Jemaat";
+    }
 
     const namaLama = mengedit.keluarga?.nama_kepala_keluarga;
     if (mengedit.is_kepala_keluarga && namaLama !== mengedit.nama_lengkap) {
@@ -392,13 +399,17 @@ export default function Admin() {
                           {pilih(a.status_keluarga, a.status_keluarga_lainnya) || "Anggota keluarga"}
                         </div>
                       ) : a.is_kepala_keluarga ? (
-                        <div className="text-xs text-neutral-500">Kepala Keluarga</div>
+                        <div className="text-xs text-neutral-500">
+                          {a.is_jemaat === false
+                            ? "Kepala Keluarga · Bukan Jemaat"
+                            : "Kepala Keluarga"}
+                        </div>
                       ) : null}
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant="secondary">{a.kategorial}</Badge>
+                  <Badge variant="secondary">{a.kategorial || "-"}</Badge>
                 </td>
                 <td className="hidden px-4 py-3 text-neutral-600 sm:table-cell">
                   {peranOf(a) || "-"}

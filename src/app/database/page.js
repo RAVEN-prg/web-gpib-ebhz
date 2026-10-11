@@ -29,6 +29,13 @@ const KELOMPOK = [
     judul: "Data pribadi",
     baris: [
       ["Nama lengkap", (a) => a.nama_lengkap],
+      [
+        "Status keanggotaan",
+        (a) =>
+          a.is_jemaat === false
+            ? "Bukan jemaat GPIB Ebenhaezer"
+            : "Jemaat GPIB Ebenhaezer",
+      ],
       ["Jenis kelamin", (a) => a.jenis_kelamin],
       ["Tempat lahir", (a) => a.tempat_lahir],
       ["Tanggal lahir", (a) => tanggal(a.tanggal_lahir)],
@@ -270,13 +277,17 @@ export default function Database() {
                           {pilih(a.status_keluarga, a.status_keluarga_lainnya) || "Anggota keluarga"}
                         </div>
                       ) : a.is_kepala_keluarga ? (
-                        <div className="text-xs text-neutral-500">Kepala Keluarga</div>
+                        <div className="text-xs text-neutral-500">
+                          {a.is_jemaat === false
+                            ? "Kepala Keluarga · Bukan Jemaat"
+                            : "Kepala Keluarga"}
+                        </div>
                       ) : null}
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant="secondary">{a.kategorial}</Badge>
+                  <Badge variant="secondary">{a.kategorial || "-"}</Badge>
                 </td>
                 <td className="hidden px-4 py-3 text-neutral-600 sm:table-cell">
                   {peranOf(a) || "-"}

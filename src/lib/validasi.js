@@ -120,10 +120,15 @@ export const FIELDS = [
 ];
 
 export const kosong = (v) => !v || !String(v).trim();
-export const aktif = (p) => FIELDS.filter((f) => !f.ada || f.ada(p));
+export const aktif = (p) =>
+  p.kk && p.is_jemaat === false
+    ? []
+    : FIELDS.filter((f) => !f.ada || f.ada(p));
 export const terisi = (f, p) =>
   !kosong(p[f.k]) && (!f.lain || p[f.k] !== "Lainnya" || !kosong(p[f.lain]));
 export const persen = (p) => {
   const a = aktif(p);
-  return Math.round((a.filter((f) => terisi(f, p)).length / a.length) * 100);
+  return a.length === 0
+    ? 100
+    : Math.round((a.filter((f) => terisi(f, p)).length / a.length) * 100);
 };
