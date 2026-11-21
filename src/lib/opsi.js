@@ -9,6 +9,7 @@ export const PENDIDIKAN = [
   "Strata 1 (S1)",
   "Strata 2 (S2)",
   "Strata 3 (S3)",
+  "Profesor",
 ];
 export const PEKERJAAN = [
   "PNS",
