@@ -46,5 +46,5 @@ export const PERAN = [
   "Panitia",
   "Lainnya",
 ];
-export const DARAH = ["A", "B", "AB", "O"];
+export const DARAH = ["A", "B", "AB", "O", "Tidak Tau"];
 export const SUDAH_BELUM = ["Sudah", "Belum"];

@@ -32,7 +32,7 @@ CREATE TABLE public.anggota (
   kategorial text NOT NULL,
   peran_pelayanan text NOT NULL,
   peran_pelayanan_lainnya text,
-  golongan_darah text NOT NULL CHECK (golongan_darah = ANY (ARRAY['A'::text, 'B'::text, 'AB'::text, 'O'::text])),
+  golongan_darah text NOT NULL CHECK (golongan_darah = ANY (ARRAY['A'::text, 'B'::text, 'AB'::text, 'O'::text, 'Tidak Tau'::text])),
   riwayat_penyakit text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   status_baptis text CHECK (status_baptis = ANY (ARRAY['Sudah'::text, 'Belum'::text])),
