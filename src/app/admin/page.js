@@ -130,6 +130,11 @@ export default function Admin() {
 
   async function simpanPerubahan() {
     if (!mengedit) return;
+    const namaBaru = mengedit.nama_lengkap?.trim();
+    if (!namaBaru) {
+      toast.error("Nama lengkap wajib diisi.");
+      return;
+    }
     setMenyimpan(true);
     const payload = Object.fromEntries(
       FIELDS.filter((field) => !field.ada || !field.ada(mengedit)).flatMap(
@@ -137,16 +142,17 @@ export default function Admin() {
           field.lain ? [field.k, field.lain].map((key) => [key, mengedit[key] || null]) : [[field.k, mengedit[field.k] || null]],
       ),
     );
+    payload.nama_lengkap = namaBaru;
     payload.is_jemaat = mengedit.is_jemaat !== false;
     if (mengedit.is_kepala_keluarga && !payload.is_jemaat) {
       payload.status_keluarga = "Bukan Jemaat";
     }
 
     const namaLama = mengedit.keluarga?.nama_kepala_keluarga;
-    if (mengedit.is_kepala_keluarga && namaLama !== mengedit.nama_lengkap) {
+    if (mengedit.is_kepala_keluarga && namaLama !== namaBaru) {
       const { error } = await supabase
         .from("keluarga")
-        .update({ nama_kepala_keluarga: mengedit.nama_lengkap.trim() })
+        .update({ nama_kepala_keluarga: namaBaru })
         .eq("id", mengedit.keluarga_id);
       if (error) {
         setMenyimpan(false);
@@ -160,7 +166,7 @@ export default function Admin() {
       .update(payload)
       .eq("id", mengedit.id);
     if (error) {
-      if (mengedit.is_kepala_keluarga && namaLama !== mengedit.nama_lengkap) {
+      if (mengedit.is_kepala_keluarga && namaLama !== namaBaru) {
         await supabase
           .from("keluarga")
           .update({ nama_kepala_keluarga: namaLama })
@@ -306,6 +312,7 @@ export default function Admin() {
         <FormAnggota
           orang={mengedit}
           kk={{}}
+          dapatUbahNama
           ubah={(patch) => setMengedit((sebelumnya) => ({ ...sebelumnya, ...patch }))}
           kembali={() => setMengedit(null)}
           selesai={simpanPerubahan}

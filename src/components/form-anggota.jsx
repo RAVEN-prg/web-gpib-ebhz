@@ -140,6 +140,7 @@ export default function FormAnggota({
   selesai,
   kembali = selesai,
   tombolSelesai = "Selanjutnya",
+  dapatUbahNama = false,
 }) {
   const [cek, setCek] = useState(false);
   const daftar = aktif(orang);
@@ -165,9 +166,23 @@ export default function FormAnggota({
   return (
     <div className="mx-auto w-full min-w-0 max-w-2xl space-y-6 overflow-x-hidden p-4 sm:p-8">
       <div className="space-y-1">
-        <h1 className="break-words text-2xl font-semibold tracking-tight text-neutral-900">
-          {orang.nama_lengkap}
-        </h1>
+        {dapatUbahNama ? (
+          <div className="space-y-2">
+            <Label htmlFor="nama-lengkap">Nama lengkap</Label>
+            <Input
+              id="nama-lengkap"
+              type="text"
+              required
+              className={`h-10 ${KONTROL}`}
+              value={orang.nama_lengkap || ""}
+              onChange={(event) => ubah({ nama_lengkap: event.target.value })}
+            />
+          </div>
+        ) : (
+          <h1 className="break-words text-2xl font-semibold tracking-tight text-neutral-900">
+            {orang.nama_lengkap}
+          </h1>
+        )}
         <p className="text-sm text-neutral-500">
           Semua kolom wajib diisi. Isi &quot;-&quot; jika tidak ada.
         </p>
